@@ -68,28 +68,25 @@ func (r *Retriever) RegisterConsumer(c consumer) error {
 func (r *Retriever) Run(ctx context.Context) {
 	// start update routine
 	go func(ctx context.Context) {
-		for {
-			select {
-			case <-r.sync:
-				level.Info(r.logger).Log(
-					"msg", "providing consumers with updated cluster info label",
+		for range r.sync {
+			_ = level.Info(r.logger).Log(
+				"msg", "providing consumers with updated cluster info label",
+			)
+			res, err := r.fetchAndDecodeClusterInfo()
+			if err != nil {
+				_ = level.Error(r.logger).Log(
+					"msg", "failed to retrieve cluster info from ES",
+					"err", err,
 				)
-				res, err := r.fetchAndDecodeClusterInfo()
-				if err != nil {
-					level.Error(r.logger).Log(
-						"msg", "failed to retrieve cluster info from ES",
-						"err", err,
-					)
-					continue
-				}
-				for name, consumerCh := range r.consumerChannels {
-					level.Debug(r.logger).Log(
-						"msg", "sending update",
-						"consumer", name,
-						"res", fmt.Sprintf("%+v", res),
-					)
-					*consumerCh <- res
-				}
+				continue
+			}
+			for name, consumerCh := range r.consumerChannels {
+				_ = level.Debug(r.logger).Log(
+					"msg", "sending update",
+					"consumer", name,
+					"res", fmt.Sprintf("%+v", res),
+				)
+				*consumerCh <- res
 			}
 		}
 	}(ctx)
@@ -97,7 +94,7 @@ func (r *Retriever) Run(ctx context.Context) {
 	r.sync <- struct{}{}
 
 	if r.interval <= 0 {
-		level.Info(r.logger).Log(
+		_ = level.Info(r.logger).Log(
 			"msg", "no periodic cluster info label update requested",
 		)
 		return
@@ -108,7 +105,7 @@ func (r *Retriever) Run(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				level.Info(r.logger).Log(
+				_ = level.Info(r.logger).Log(
 					"msg", "context cancelled, exiting cluster info update loop",
 					"err", ctx.Err(),
 				)
@@ -127,7 +124,7 @@ func (r *Retriever) fetchAndDecodeClusterInfo() (*Response, error) {
 
 	res, err := r.client.Get(u.String())
 	if err != nil {
-		level.Error(r.logger).Log(
+		_ = level.Error(r.logger).Log(
 			"msg", "failed to get cluster info",
 			"err", err,
 		)
