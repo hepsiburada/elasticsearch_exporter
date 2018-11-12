@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log/level"
-	"github.com/justwatchcom/elasticsearch_exporter/collector"
+	"github.com/hepsiburada/elasticsearch_exporter/collector"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
 )
@@ -72,6 +72,7 @@ func main() {
 	versionMetric := version.NewCollector(Name)
 	prometheus.MustRegister(versionMetric)
 	prometheus.MustRegister(collector.NewClusterHealth(logger, httpClient, esURL))
+	prometheus.MustRegister(collector.NewTasks(logger, httpClient, esURL))
 	prometheus.MustRegister(collector.NewNodes(logger, httpClient, esURL, *esAllNodes, *esNode))
 	if *esExportIndices || *esExportShards {
 		prometheus.MustRegister(collector.NewIndices(logger, httpClient, esURL, *esExportShards))
