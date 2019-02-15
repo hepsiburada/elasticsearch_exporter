@@ -4,17 +4,18 @@ Prometheus exporter for various metrics about ElasticSearch, written in Go.
 #### Docker
 
 ```bash
-docker pull hepsiburada/elasticsearch_exporter:0.0.1
-docker run --rm -p 9108:9108 hepsiburada/elasticsearch_exporter:0.0.1
+docker pull hepsiburada/elasticsearch_exporter:0.0.2
+docker run --rm -p 9108:9108 hepsiburada/elasticsearch_exporter:0.0.2
 ```
 
 Example `docker-compose.yml`:
 
 ```yaml
 elasticsearch_exporter:
-    image: hepsiburada/elasticsearch_exporter:0.0.1
+    image: hepsiburada/elasticsearch_exporter:0.0.2
     command:
      - '-es.uri=http://elasticsearch:9200'
+     - '-logs.uri=http://elasticsearch:9200'
     restart: always
     ports:
     - "127.0.0.1:9108:9108"
@@ -36,6 +37,7 @@ elasticsearch_exporter --help
 | Argument              | Description | Default     |
 | --------              | ----------- | ----------- |
 | es.uri                | Address (host and port) of the Elasticsearch node we should connect to. This could be a local node (`localhost:9200`, for instance), or the address of a remote Elasticsearch server. When basic auth is needed, specify as: `<proto>://<user>:<password>@<host>:<port>`. E.G., `http://admin:pass@localhost:9200`. | http://localhost:9200 |
+| logs.uri              | Address (host and port) of the Logs node we should connect to. This could be a local node (`localhost:9200`, for instance), or the address of a remote Logs server. When basic auth is needed, specify as: `<proto>://<user>:<password>@<host>:<port>`. E.G., `http://admin:pass@localhost:9200`. | http://localhost:9200 |
 | es.all                | If true, query stats for all nodes in the cluster, rather than just the node we connect to.                             | false |
 | es.indices            | If true, query stats for all indices in the cluster. | false |
 | es.shards             | If true, query stats for all indices in the cluster, including shard-level stats (implies `es.indices=true`). | false |

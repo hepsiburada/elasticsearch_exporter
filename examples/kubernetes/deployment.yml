@@ -21,8 +21,9 @@ spec:
       - command:
         - /bin/elasticsearch_exporter
         - -es.uri=http://elasticsearch:9200
+        - -logs.uri=http://elasticsearch:9200
         - -es.all=true
-        image: hepsiburada/elasticsearch_exporter:0.0.1
+        image: hepsiburada/elasticsearch_exporter:0.0.2
         securityContext:
           capabilities:
             drop:

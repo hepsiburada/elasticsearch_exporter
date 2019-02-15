@@ -20,6 +20,7 @@ func main() {
 		listenAddress        = flag.String("web.listen-address", ":9108", "Address to listen on for web interface and telemetry.")
 		metricsPath          = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 		esURI                = flag.String("es.uri", "http://localhost:9200", "HTTP API address of an Elasticsearch node.")
+		logsURI              = flag.String("logs.uri", "http://localhost:9200", "HTTP API address of an Logs node.")
 		esTimeout            = flag.Duration("es.timeout", 5*time.Second, "Timeout for trying to get stats from Elasticsearch.")
 		esAllNodes           = flag.Bool("es.all", false, "Export stats for all nodes in the cluster. If used, this flag will override the flag es.node.")
 		esNode               = flag.String("es.node", "_local", "Node's name of which metrics should be exposed.")
@@ -44,15 +45,32 @@ func main() {
 
 	logger := getLogger(*logLevel, *logOutput, *logFormat)
 
-	esURIEnv, ok := os.LookupEnv("ES_URI")
-	if ok {
+	esURIEnv, ok_es := os.LookupEnv("ES_URI")
+	logsURIEnv, ok_logs := os.LookupEnv("LOGS_URI")
+
+	if ok_es {
 		*esURI = esURIEnv
 	}
-	esURL, err := url.Parse(*esURI)
-	if err != nil {
+
+	if ok_logs {
+		*logsURI = logsURIEnv
+	}
+
+	esURL, errES := url.Parse(*esURI)
+	logsURL, errLOGS := url.Parse(*logsURI)
+
+	if errES != nil {
 		_ = level.Error(logger).Log(
 			"msg", "failed to parse es.uri",
-			"err", err,
+			"err", errES,
+		)
+		os.Exit(1)
+	}
+
+	if errLOGS != nil {
+		_ = level.Error(logger).Log(
+			"msg", "failed to parse logs.uri",
+			"err", errLOGS,
 		)
 		os.Exit(1)
 	}
@@ -73,6 +91,7 @@ func main() {
 	prometheus.MustRegister(versionMetric)
 	prometheus.MustRegister(collector.NewClusterHealth(logger, httpClient, esURL))
 	prometheus.MustRegister(collector.NewTasks(logger, httpClient, esURL))
+	prometheus.MustRegister(collector.NewLogsQueries(logger, httpClient, logsURL))
 	prometheus.MustRegister(collector.NewNodes(logger, httpClient, esURL, *esAllNodes, *esNode))
 	if *esExportIndices || *esExportShards {
 		prometheus.MustRegister(collector.NewIndices(logger, httpClient, esURL, *esExportShards))
@@ -82,7 +101,7 @@ func main() {
 	}
 	http.Handle(*metricsPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		_, err = w.Write([]byte(`<html>
+		_, err := w.Write([]byte(`<html>
 			<head><title>Elasticsearch Exporter</title></head>
 			<body>
 			<h1>Elasticsearch Exporter</h1>
