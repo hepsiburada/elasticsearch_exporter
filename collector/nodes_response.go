@@ -131,9 +131,11 @@ type NodeStatsIndicesResponse struct {
 	QueryCache   NodeStatsIndicesCacheResponse `json:"query_cache"`
 	RequestCache NodeStatsIndicesCacheResponse `json:"request_cache"`
 	Flush        NodeStatsIndicesFlushResponse
+	Warmer       NodeStatsIndicesWarmerResponse
 	Segments     NodeStatsIndicesSegmentsResponse
 	Refresh      NodeStatsIndicesRefreshResponse
 	Translog     NodeStatsIndicesTranslogResponse
+	Completion   NodeStatsIndicesCompletionResponse
 }
 
 // NodeStatsIndicesDocsResponse defines node stats docs information structure for indices
@@ -154,10 +156,24 @@ type NodeStatsIndicesTranslogResponse struct {
 	Size       int64 `json:"size_in_bytes"`
 }
 
+// NodeStatsIndicesCompletionResponse defines node stats completion information structure for indices
+type NodeStatsIndicesCompletionResponse struct {
+	Size int64 `json:"size_in_bytes"`
+}
+
 // NodeStatsIndicesSegmentsResponse defines node stats segments information structure for indices
 type NodeStatsIndicesSegmentsResponse struct {
-	Count  int64 `json:"count"`
-	Memory int64 `json:"memory_in_bytes"`
+	Count              int64 `json:"count"`
+	Memory             int64 `json:"memory_in_bytes"`
+	TermsMemory        int64 `json:"terms_memory_in_bytes"`
+	IndexWriterMemory  int64 `json:"index_writer_memory_in_bytes"`
+	NormsMemory        int64 `json:"norms_memory_in_bytes"`
+	StoredFieldsMemory int64 `json:"stored_fields_memory_in_bytes"`
+	FixedBitSet        int64 `json:"fixed_bit_set_memory_in_bytes"`
+	DocValuesMemory    int64 `json:"doc_values_memory_in_bytes"`
+	TermVectorsMemory  int64 `json:"term_vectors_memory_in_bytes"`
+	PointsMemory       int64 `json:"points_memory_in_bytes"`
+	VersionMapMemory   int64 `json:"version_map_memory_in_bytes"`
 }
 
 // NodeStatsIndicesStoreResponse defines node stats store information structure for indices
@@ -174,17 +190,20 @@ type NodeStatsIndicesIndexingResponse struct {
 	DeleteTotal   int64 `json:"delete_total"`
 	DeleteTime    int64 `json:"delete_time_in_millis"`
 	DeleteCurrent int64 `json:"delete_current"`
+	IsThrottled   bool  `json:"is_throttled"`
+	ThrottleTime  int64 `json:"throttle_time_in_millis"`
 }
 
 // NodeStatsIndicesMergesResponse defines node stats merges information structure for indices
 type NodeStatsIndicesMergesResponse struct {
-	Current     int64 `json:"current"`
-	CurrentDocs int64 `json:"current_docs"`
-	CurrentSize int64 `json:"current_size_in_bytes"`
-	Total       int64 `json:"total"`
-	TotalDocs   int64 `json:"total_docs"`
-	TotalSize   int64 `json:"total_size_in_bytes"`
-	TotalTime   int64 `json:"total_time_in_millis"`
+	Current            int64 `json:"current"`
+	CurrentDocs        int64 `json:"current_docs"`
+	CurrentSize        int64 `json:"current_size_in_bytes"`
+	Total              int64 `json:"total"`
+	TotalDocs          int64 `json:"total_docs"`
+	TotalSize          int64 `json:"total_size_in_bytes"`
+	TotalTime          int64 `json:"total_time_in_millis"`
+	TotalThrottledTime int64 `json:"total_throttled_time_in_millis"`
 }
 
 // NodeStatsIndicesGetResponse defines node stats get information structure for indices
@@ -207,12 +226,22 @@ type NodeStatsIndicesSearchResponse struct {
 	FetchTotal   int64 `json:"fetch_total"`
 	FetchTime    int64 `json:"fetch_time_in_millis"`
 	FetchCurrent int64 `json:"fetch_current"`
+	SuggestTotal int64 `json:"suggest_total"`
+	SuggestTime  int64 `json:"suggest_time_in_millis"`
+	ScrollTotal  int64 `json:"scroll_total"`
+	ScrollTime   int64 `json:"scroll_time_in_millis"`
 }
 
 // NodeStatsIndicesFlushResponse defines node stats flush information structure for indices
 type NodeStatsIndicesFlushResponse struct {
 	Total int64 `json:"total"`
 	Time  int64 `json:"total_time_in_millis"`
+}
+
+// NodeStatsIndicesWarmerResponse defines node stats warmer information structure for indices
+type NodeStatsIndicesWarmerResponse struct {
+	Total     int64 `json:"total"`
+	TotalTime int64 `json:"total_time_in_millis"`
 }
 
 // NodeStatsIndicesCacheResponse defines node stats cache information structure for indices
